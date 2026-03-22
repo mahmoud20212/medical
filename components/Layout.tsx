@@ -3,19 +3,43 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { BookOpen, Home, Shield, Stethoscope } from 'lucide-react';
-import { ReactNode } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 
 interface LayoutProps {
   children: ReactNode;
 }
 
+const AUTH_CACHE_KEY = 'medical_auth_state';
+
 export default function Layout({ children }: LayoutProps) {
   const pathname = usePathname();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    const loadAuthState = async () => {
+      const cachedAuth = window.sessionStorage.getItem(AUTH_CACHE_KEY) === '1';
+      setIsAuthenticated(cachedAuth);
+
+      try {
+        const response = await fetch('/api/auth/me', { cache: 'no-store' });
+        const nextAuthState = response.ok;
+        setIsAuthenticated(nextAuthState);
+        window.sessionStorage.setItem(AUTH_CACHE_KEY, nextAuthState ? '1' : '0');
+      } catch {
+        setIsAuthenticated(false);
+        window.sessionStorage.setItem(AUTH_CACHE_KEY, '0');
+      }
+    };
+
+    void loadAuthState();
+  }, []);
 
   const navLinks = [
     { href: '/', label: 'الرئيسية', icon: <Home className="w-4 h-4" /> },
     { href: '/courses', label: 'المساقات الدراسية', icon: <BookOpen className="w-4 h-4" /> },
-    { href: '/admin', label: 'لوحة التحكم', icon: <Shield className="w-4 h-4" /> },
+    ...(isAuthenticated
+      ? [{ href: '/admin', label: 'لوحة التحكم', icon: <Shield className="w-4 h-4" /> }]
+      : []),
   ];
 
   return (

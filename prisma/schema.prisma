@@ -1,0 +1,90 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum CourseType {
+  basic
+  clinical
+}
+
+enum CourseFileType {
+  pdf
+  doc
+  ppt
+  video
+  link
+}
+
+model Course {
+  id          Int         @id @default(autoincrement())
+  name        String
+  description String?
+  year        Int
+  semester    String
+  type        CourseType
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  files       CourseFile[]
+
+  @@index([year, semester])
+  @@index([type])
+  @@unique([name, year, semester, type])
+}
+
+model CourseFile {
+  id         Int            @id @default(autoincrement())
+  courseId   Int
+  name       String
+  url        String
+  fileType   CourseFileType
+  uploadedAt DateTime       @default(now())
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@index([courseId])
+  @@index([fileType])
+}
+
+model TeamMember {
+  id        Int      @id @default(autoincrement())
+  name      String
+  role      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model User {
+  id           Int       @id @default(autoincrement())
+  username     String    @unique
+  email        String    @unique
+  passwordHash String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  sessions     Session[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    Int
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+

@@ -1,12 +1,35 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { BookOpen, GraduationCap, Users } from 'lucide-react';
 import Layout from '@/components/Layout';
-import { mockTeam } from '@/lib/mockData';
+import type { TeamMember } from '@/lib/types';
 
 export default function HomePage() {
+  const [team, setTeam] = useState<TeamMember[]>([]);
+
+  useEffect(() => {
+    const loadTeam = async () => {
+      try {
+        const response = await fetch('/api/team?page=1&pageSize=4', { cache: 'no-store' });
+
+        if (!response.ok) {
+          setTeam([]);
+          return;
+        }
+
+        const text = await response.text();
+        const data = text ? (JSON.parse(text) as { items?: TeamMember[] }) : {};
+        setTeam(data.items ?? []);
+      } catch {
+        setTeam([]);
+      }
+    };
+
+    void loadTeam();
+  }, []);
+
   return (
     <Layout>
       {/* Hero Section */}
@@ -76,7 +99,7 @@ export default function HomePage() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {mockTeam.map((member, idx) => (
+          {team.map((member) => (
             <div
               key={member.id}
               className="bg-card border border-border p-6 rounded-2xl shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-center flex flex-col items-center gap-4"

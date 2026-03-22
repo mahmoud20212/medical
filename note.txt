@@ -1,0 +1,3 @@
+فرز Sort في الـ API (مثل latest/name/year).
+Debounce للبحث في الواجهة لتقليل عدد الطلبات.
+رسائل نجاح/فشل toast بدل alert.
