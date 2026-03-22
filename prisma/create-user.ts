@@ -2,7 +2,7 @@ import "dotenv/config";
 import { randomBytes, scryptSync } from "node:crypto";
 import { createInterface } from "node:readline/promises";
 import { stdin as input, stdout as output } from "node:process";
-import { PrismaClient } from "../lib/generated/prisma/client";
+import { PrismaClient } from "@/lib/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 
 function resolvePostgresUrl(): string {
