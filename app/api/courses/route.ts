@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { CourseType } from "@/lib/generated/prisma/enums";
+import { CourseType } from "@prisma/client";
 import { requireAuth } from "@/lib/auth";
 
 const DEFAULT_PAGE = 1;

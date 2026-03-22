@@ -1,4 +1,4 @@
-import { PrismaClient, CourseType, CourseFileType } from "../lib/generated/prisma/client";
+import { PrismaClient, CourseType, CourseFileType } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 
 function getPostgresConnectionString(): string {
