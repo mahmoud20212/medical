@@ -1203,9 +1203,9 @@ function TeamManager({ onNotify }: { onNotify: (kind: ToastKind, message: string
 
   return (
     <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-bold">أعضاء الفريق</h2>
-        <div className="flex items-center gap-3">
+      <div className="md:flex justify-between items-center mb-6">
+        <h2 className="text-xl font-bold mb-3">أعضاء الفريق</h2>
+        <div className="flex items-center gap-3 flex-wrap">
           <select
             value={sort}
             onChange={(e) => {
