@@ -16,9 +16,14 @@ function resolvePostgresUrl(): string {
     const isProduction = process.env.NODE_ENV === "production";
 
     if (!isLocal && !parsed.searchParams.has("sslmode")) {
-      // In local development networks, certificate chains may be re-signed by proxies.
-      // Keep production strict, but make dev resilient.
-      parsed.searchParams.set("sslmode", isProduction ? "verify-full" : "no-verify");
+      if (isSupabasePooler) {
+        // Supabase's PgBouncer pooler uses internally-signed certificates.
+        // verify-full / verify-ca will always fail against it.
+        // The connection is still TLS-encrypted; we just skip chain verification.
+        parsed.searchParams.set("sslmode", "no-verify");
+      } else {
+        parsed.searchParams.set("sslmode", isProduction ? "verify-full" : "no-verify");
+      }
     }
 
     if (isSupabasePooler && !parsed.searchParams.has("pgbouncer")) {
@@ -58,7 +63,15 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 function createPrismaClient() {
-  const adapter = new PrismaPg({ connectionString: resolvePostgresUrl() });
+  const url = resolvePostgresUrl();
+  const isSupabasePooler = url.includes("pooler.supabase.com");
+
+  const adapter = new PrismaPg({
+    connectionString: url,
+    // Supabase pooler always presents a self-signed cert; rejectUnauthorized
+    // must be false or Node.js TLS will refuse the connection in production.
+    ...(isSupabasePooler && { ssl: { rejectUnauthorized: false } }),
+  });
   return new PrismaClient({ adapter });
 }
 
