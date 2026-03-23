@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { BookOpen, GraduationCap, Users } from 'lucide-react';
 import Layout from '@/components/Layout';
 import type { TeamMember } from '@/lib/types';
+import Image from 'next/image';
 
 export default function HomePage() {
   const [team, setTeam] = useState<TeamMember[]>([]);
@@ -67,21 +68,21 @@ export default function HomePage() {
             {/* College Logo Placeholder */}
             <div className="w-40 h-40 md:w-56 md:h-56 bg-white rounded-3xl p-4 shadow-2xl rotate-[-6deg] hover:rotate-0 transition-transform duration-300 flex items-center justify-center">
               <div className="text-center text-primary">
-                {/* Replace with: <Image src="/images/logo-college.png" alt="شعار الكلية" width={200} height={200} className="object-contain" /> */}
-                <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-2">
+                <Image src="/images/logo-college.jpeg" alt="شعار الكلية" width={200} height={200} className="object-contain" />
+                {/* <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-2">
                   <GraduationCap className="w-12 h-12 text-primary" />
                 </div>
-                <p className="text-xs font-bold text-primary/70">شعار الكلية</p>
+                <p className="text-xs font-bold text-primary/70">شعار الكلية</p> */}
               </div>
             </div>
             {/* Batch Logo Placeholder */}
             <div className="w-40 h-40 md:w-56 md:h-56 bg-white rounded-3xl p-4 shadow-2xl rotate-[6deg] hover:rotate-0 transition-transform duration-300 translate-y-8 flex items-center justify-center">
               <div className="text-center text-primary">
-                {/* Replace with: <Image src="/images/logo-batch.png" alt="شعار الدفعة" width={200} height={200} className="object-contain" /> */}
-                <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-2">
+                <Image src="/images/logo-yussir.jpeg" alt="شعار الدفعة" width={200} height={200} className="object-contain" />
+                {/* <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-2">
                   <Users className="w-12 h-12 text-primary" />
                 </div>
-                <p className="text-xs font-bold text-primary/70">شعار الدفعة</p>
+                <p className="text-xs font-bold text-primary/70">شعار الدفعة</p> */}
               </div>
             </div>
           </div>
