@@ -109,7 +109,12 @@ export default function Layout({ children }: LayoutProps) {
             <Stethoscope className="w-5 h-5" />
             <span>© {new Date().getFullYear()} أرشيف كلية الطب البشري. جميع الحقوق محفوظة.</span>
           </div>
-          <p className="text-sm text-muted-foreground">صُنع بحب لدعم مسيرة التعلم</p>
+          <p className="text-sm text-muted-foreground">
+            صُنع بحب لدعم مسيرة التعلم
+          </p>
+        </div>
+        <div className="border-t text-center py-3 text-muted-foreground">
+          <span className="text-xs">Created By Eng. Mahmoud Ouda</span>
         </div>
       </footer>
     </div>

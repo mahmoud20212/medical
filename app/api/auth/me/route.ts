@@ -11,6 +11,6 @@ export async function GET() {
 
     return NextResponse.json({ user: auth.user });
   } catch {
-    return NextResponse.json({ user: null }, { status: 500 });
+    return NextResponse.json({ user: null }, { status: 401 });
   }
 }

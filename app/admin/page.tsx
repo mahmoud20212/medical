@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import Layout from '@/components/Layout';
 import type { Course, TeamMember, CourseFile } from '@/lib/types';
+import { useDebouncedValue } from '@/lib/useDebouncedValue';
 
 type PaginatedResponse<T> = {
   items: T[];
@@ -42,6 +43,15 @@ type AuthUser = {
   username: string;
   email: string;
 };
+
+async function parseJsonSafely<T>(response: Response, fallback: T): Promise<T> {
+  try {
+    const text = await response.text();
+    return text ? (JSON.parse(text) as T) : fallback;
+  } catch {
+    return fallback;
+  }
+}
 
 export default function AdminPage() {
   const [authLoading, setAuthLoading] = useState(true);
@@ -386,6 +396,7 @@ function CoursesManager({ onNotify }: { onNotify: (kind: ToastKind, message: str
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearchQuery = useDebouncedValue(searchQuery, 500);
   const [sort, setSort] = useState<'latest' | 'name' | 'year'>('latest');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -400,20 +411,41 @@ function CoursesManager({ onNotify }: { onNotify: (kind: ToastKind, message: str
       includeFiles: 'false',
     });
 
-    if (searchQuery.trim()) {
-      params.set('q', searchQuery.trim());
+    if (debouncedSearchQuery.trim()) {
+      params.set('q', debouncedSearchQuery.trim());
     }
     params.set('sort', sort);
 
-    const response = await fetch(`/api/courses?${params.toString()}`, { cache: 'no-store' });
-    const data = (await response.json()) as PaginatedResponse<Course>;
-    const normalized: Course[] = data.items.map((course: Course) => ({
-      ...course,
-      description: course.description || '',
-    }));
+    try {
+      const response = await fetch(`/api/courses?${params.toString()}`, { cache: 'no-store' });
+      const fallback: PaginatedResponse<Course> = {
+        items: [],
+        pagination: {
+          page,
+          pageSize: 8,
+          total: 0,
+          totalPages: 1,
+        },
+      };
 
-    setCourses(normalized);
-    setTotalPages(data.pagination.totalPages);
+      if (!response.ok) {
+        setCourses([]);
+        setTotalPages(1);
+        return;
+      }
+
+      const data = await parseJsonSafely<PaginatedResponse<Course>>(response, fallback);
+      const normalized: Course[] = data.items.map((course: Course) => ({
+        ...course,
+        description: course.description || '',
+      }));
+
+      setCourses(normalized);
+      setTotalPages(data.pagination.totalPages || 1);
+    } catch {
+      setCourses([]);
+      setTotalPages(1);
+    }
   };
 
   useEffect(() => {
@@ -427,7 +459,7 @@ function CoursesManager({ onNotify }: { onNotify: (kind: ToastKind, message: str
     };
 
     void load();
-  }, [searchQuery, sort, page]);
+  }, [debouncedSearchQuery, sort, page]);
 
   const handleDelete = async (id: number) => {
     if (confirm('هل أنت متأكد من حذف هذا المساق؟')) {
@@ -823,6 +855,7 @@ function ManageFilesModal({
   const [files, setFiles] = useState<CourseFile[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearchQuery = useDebouncedValue(searchQuery, 500);
   const [sort, setSort] = useState<'latest' | 'name'>('latest');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -835,15 +868,36 @@ function ManageFilesModal({
       pageSize: '5',
     });
 
-    if (searchQuery.trim()) {
-      params.set('q', searchQuery.trim());
+    if (debouncedSearchQuery.trim()) {
+      params.set('q', debouncedSearchQuery.trim());
     }
     params.set('sort', sort);
 
-    const response = await fetch(`/api/courses/${courseId}/files?${params.toString()}`, { cache: 'no-store' });
-    const data = (await response.json()) as PaginatedResponse<CourseFile>;
-    setFiles(data.items);
-    setTotalPages(data.pagination.totalPages);
+    try {
+      const response = await fetch(`/api/courses/${courseId}/files?${params.toString()}`, { cache: 'no-store' });
+      const fallback: PaginatedResponse<CourseFile> = {
+        items: [],
+        pagination: {
+          page,
+          pageSize: 5,
+          total: 0,
+          totalPages: 1,
+        },
+      };
+
+      if (!response.ok) {
+        setFiles([]);
+        setTotalPages(1);
+        return;
+      }
+
+      const data = await parseJsonSafely<PaginatedResponse<CourseFile>>(response, fallback);
+      setFiles(data.items);
+      setTotalPages(data.pagination.totalPages || 1);
+    } catch {
+      setFiles([]);
+      setTotalPages(1);
+    }
   };
 
   useEffect(() => {
@@ -856,7 +910,7 @@ function ManageFilesModal({
     };
 
     void load();
-  }, [courseId, searchQuery, sort, page]);
+  }, [courseId, debouncedSearchQuery, sort, page]);
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1116,6 +1170,7 @@ function TeamManager({ onNotify }: { onNotify: (kind: ToastKind, message: string
   const [team, setTeam] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearchQuery = useDebouncedValue(searchQuery, 500);
   const [sort, setSort] = useState<'latest' | 'name'>('latest');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -1129,15 +1184,36 @@ function TeamManager({ onNotify }: { onNotify: (kind: ToastKind, message: string
       pageSize: '8',
     });
 
-    if (searchQuery.trim()) {
-      params.set('q', searchQuery.trim());
+    if (debouncedSearchQuery.trim()) {
+      params.set('q', debouncedSearchQuery.trim());
     }
     params.set('sort', sort);
 
-    const response = await fetch(`/api/team?${params.toString()}`, { cache: 'no-store' });
-    const data = (await response.json()) as PaginatedResponse<TeamMember>;
-    setTeam(data.items);
-    setTotalPages(data.pagination.totalPages);
+    try {
+      const response = await fetch(`/api/team?${params.toString()}`, { cache: 'no-store' });
+      const fallback: PaginatedResponse<TeamMember> = {
+        items: [],
+        pagination: {
+          page,
+          pageSize: 8,
+          total: 0,
+          totalPages: 1,
+        },
+      };
+
+      if (!response.ok) {
+        setTeam([]);
+        setTotalPages(1);
+        return;
+      }
+
+      const data = await parseJsonSafely<PaginatedResponse<TeamMember>>(response, fallback);
+      setTeam(data.items);
+      setTotalPages(data.pagination.totalPages || 1);
+    } catch {
+      setTeam([]);
+      setTotalPages(1);
+    }
   };
 
   useEffect(() => {
@@ -1150,7 +1226,7 @@ function TeamManager({ onNotify }: { onNotify: (kind: ToastKind, message: string
     };
 
     void load();
-  }, [searchQuery, sort, page]);
+  }, [debouncedSearchQuery, sort, page]);
 
   const handleDelete = async (id: number) => {
     if (confirm('هل أنت متأكد من حذف العضو؟')) {

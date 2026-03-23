@@ -23,39 +23,55 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
   const pageSize = Math.min(Math.max(Number(searchParams.get("pageSize") || DEFAULT_PAGE_SIZE), 1), MAX_PAGE_SIZE);
   const skip = (page - 1) * pageSize;
 
-  const where = {
-    courseId,
-    ...(q
-      ? {
-          OR: [
-            { name: { contains: q, mode: "insensitive" as const } },
-            { url: { contains: q, mode: "insensitive" as const } },
-          ],
-        }
-      : {}),
-  };
+  try {
+    const where = {
+      courseId,
+      ...(q
+        ? {
+            OR: [
+              { name: { contains: q, mode: "insensitive" as const } },
+              { url: { contains: q, mode: "insensitive" as const } },
+            ],
+          }
+        : {}),
+    };
 
-  const orderBy = sortParam === "name" ? { name: orderParam } : { uploadedAt: orderParam };
+    const orderBy = sortParam === "name" ? { name: orderParam } : { uploadedAt: orderParam };
 
-  const [items, total] = await Promise.all([
-    prisma.courseFile.findMany({
-      where,
-      orderBy,
-      skip,
-      take: pageSize,
-    }),
-    prisma.courseFile.count({ where }),
-  ]);
+    const [items, total] = await Promise.all([
+      prisma.courseFile.findMany({
+        where,
+        orderBy,
+        skip,
+        take: pageSize,
+      }),
+      prisma.courseFile.count({ where }),
+    ]);
 
-  return NextResponse.json({
-    items,
-    pagination: {
-      page,
-      pageSize,
-      total,
-      totalPages: Math.max(Math.ceil(total / pageSize), 1),
-    },
-  });
+    return NextResponse.json({
+      items,
+      pagination: {
+        page,
+        pageSize,
+        total,
+        totalPages: Math.max(Math.ceil(total / pageSize), 1),
+      },
+    });
+  } catch {
+    return NextResponse.json(
+      {
+        items: [],
+        pagination: {
+          page,
+          pageSize,
+          total: 0,
+          totalPages: 1,
+        },
+        error: "Failed to load course files.",
+      },
+      { status: 500 }
+    );
+  }
 }
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {

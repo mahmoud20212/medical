@@ -20,6 +20,7 @@ import {
 import Layout from '@/components/Layout';
 import type { Course, CourseFile, CourseType } from '@/lib/types';
 import { format } from 'date-fns';
+import { useDebouncedValue } from '@/lib/useDebouncedValue';
 
 type CoursesApiResponse = {
   items: Course[];
@@ -110,6 +111,7 @@ export default function CoursesPage() {
   const [activeType, setActiveType] = useState<ActiveCourseType>('all');
   const [selectedYear, setSelectedYear] = useState<string>('all');
   const [selectedSemester, setSelectedSemester] = useState<string>('all');
+  const debouncedSearchQuery = useDebouncedValue(searchQuery, 500);
 
   useEffect(() => {
     const loadMeta = async () => {
@@ -155,7 +157,7 @@ export default function CoursesPage() {
         pageSize: String(PAGE_SIZE),
       });
 
-      if (searchQuery.trim()) params.set('q', searchQuery.trim());
+      if (debouncedSearchQuery.trim()) params.set('q', debouncedSearchQuery.trim());
       params.set('sort', sort);
       if (activeType !== 'all') params.set('type', activeType);
       if (selectedYear !== 'all') params.set('year', selectedYear);
@@ -201,7 +203,7 @@ export default function CoursesPage() {
     };
 
     void loadCourses();
-  }, [searchQuery, sort, activeType, selectedYear, selectedSemester, page]);
+  }, [debouncedSearchQuery, sort, activeType, selectedYear, selectedSemester, page]);
 
   const availableYears = useMemo(() => meta?.years ?? [], [meta]);
   const availableSemesters = useMemo(() => meta?.semesters ?? [], [meta]);
