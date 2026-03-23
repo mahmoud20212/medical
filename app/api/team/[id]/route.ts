@@ -28,8 +28,10 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     });
 
     return NextResponse.json(member);
-  } catch {
-    return NextResponse.json({ error: "Failed to update team member." }, { status: 500 });
+  } catch (error: unknown) {
+    console.error("🔥 ERROR in PATCH /api/team/[id]:", error);
+    const message = error instanceof Error ? error.message : "Failed to update team member.";
+    return NextResponse.json({ success: false, error: message }, { status: 500 });
   }
 }
 
@@ -52,7 +54,9 @@ export async function DELETE(_: Request, context: { params: Promise<{ id: string
     });
 
     return NextResponse.json({ success: true });
-  } catch {
-    return NextResponse.json({ error: "Failed to delete team member." }, { status: 500 });
+  } catch (error: unknown) {
+    console.error("🔥 ERROR in DELETE /api/team/[id]:", error);
+    const message = error instanceof Error ? error.message : "Failed to delete team member.";
+    return NextResponse.json({ success: false, error: message }, { status: 500 });
   }
 }

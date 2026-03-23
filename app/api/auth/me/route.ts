@@ -10,7 +10,8 @@ export async function GET() {
     }
 
     return NextResponse.json({ user: auth.user });
-  } catch {
+  } catch (error: unknown) {
+    console.error("🔥 ERROR in GET /api/auth/me:", error);
     return NextResponse.json({ user: null }, { status: 401 });
   }
 }

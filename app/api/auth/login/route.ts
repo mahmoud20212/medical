@@ -45,7 +45,9 @@ export async function POST(request: Request) {
 
     await setSessionCookie(response, token, expiresAt);
     return response;
-  } catch {
-    return NextResponse.json({ error: "تعذر تسجيل الدخول." }, { status: 500 });
+  } catch (error: unknown) {
+    console.error("🔥 ERROR in POST /api/auth/login:", error);
+    const message = error instanceof Error ? error.message : "تعذر تسجيل الدخول.";
+    return NextResponse.json({ success: false, error: message }, { status: 500 });
   }
 }

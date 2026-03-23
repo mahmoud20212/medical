@@ -57,17 +57,15 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
         totalPages: Math.max(Math.ceil(total / pageSize), 1),
       },
     });
-  } catch {
+  } catch (error: unknown) {
+    console.error("🔥 ERROR in GET /api/courses/[id]/files:", error);
+    const message = error instanceof Error ? error.message : "Failed to load course files.";
     return NextResponse.json(
       {
+        success: false,
         items: [],
-        pagination: {
-          page,
-          pageSize,
-          total: 0,
-          totalPages: 1,
-        },
-        error: "Failed to load course files.",
+        pagination: { page, pageSize, total: 0, totalPages: 1 },
+        error: message,
       },
       { status: 500 }
     );
@@ -105,7 +103,9 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     });
 
     return NextResponse.json(file, { status: 201 });
-  } catch {
-    return NextResponse.json({ error: "Failed to create file." }, { status: 500 });
+  } catch (error: unknown) {
+    console.error("🔥 ERROR in POST /api/courses/[id]/files:", error);
+    const message = error instanceof Error ? error.message : "Failed to create file.";
+    return NextResponse.json({ success: false, error: message }, { status: 500 });
   }
 }

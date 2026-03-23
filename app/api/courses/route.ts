@@ -74,17 +74,15 @@ export async function GET(request: Request) {
         totalPages: Math.max(Math.ceil(total / pageSize), 1),
       },
     });
-  } catch {
+  } catch (error: unknown) {
+    console.error("🔥 ERROR in GET /api/courses:", error);
+    const message = error instanceof Error ? error.message : "Failed to load courses.";
     return NextResponse.json(
       {
+        success: false,
         items: [],
-        pagination: {
-          page,
-          pageSize,
-          total: 0,
-          totalPages: 1,
-        },
-        error: "Failed to load courses.",
+        pagination: { page, pageSize, total: 0, totalPages: 1 },
+        error: message,
       },
       { status: 500 }
     );
@@ -123,28 +121,25 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json(course, { status: 201 });
-  } catch (error) {
+  } catch (error: unknown) {
+    console.error("🔥 ERROR in POST /api/courses:", error);
     const dbError = error as { code?: string; message?: string };
     const message = dbError?.message ?? "";
 
     if (dbError?.code === "P2002") {
       return NextResponse.json(
-        {
-          error: "هذا المساق موجود مسبقاً بنفس السنة والفصل والنوع.",
-        },
+        { success: false, error: "هذا المساق موجود مسبقاً بنفس السنة والفصل والنوع." },
         { status: 409 }
       );
     }
 
     if (dbError?.code === "ECONNREFUSED" || message.includes("ECONNREFUSED")) {
       return NextResponse.json(
-        {
-          error: "تعذر الاتصال بقاعدة البيانات. تأكد من تشغيلها وإعداد DATABASE_URL بشكل صحيح.",
-        },
+        { success: false, error: "تعذر الاتصال بقاعدة البيانات. تأكد من تشغيلها وإعداد DATABASE_URL بشكل صحيح." },
         { status: 503 }
       );
     }
 
-    return NextResponse.json({ error: "Failed to create course." }, { status: 500 });
+    return NextResponse.json({ success: false, error: message || "Failed to create course." }, { status: 500 });
   }
 }

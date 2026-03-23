@@ -28,17 +28,16 @@ export async function GET() {
         clinical: clinicalCount,
       },
     });
-  } catch {
+  } catch (error: unknown) {
+    console.error("🔥 ERROR in GET /api/courses/meta:", error);
+    const message = error instanceof Error ? error.message : "Failed to load courses metadata.";
     return NextResponse.json(
       {
+        success: false,
         years: [],
         semesters: [],
-        counts: {
-          all: 0,
-          basic: 0,
-          clinical: 0,
-        },
-        error: "Failed to load courses metadata.",
+        counts: { all: 0, basic: 0, clinical: 0 },
+        error: message,
       },
       { status: 500 }
     );

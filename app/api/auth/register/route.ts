@@ -61,7 +61,9 @@ export async function POST(request: Request) {
     const response = NextResponse.json({ user }, { status: 201 });
     await setSessionCookie(response, token, expiresAt);
     return response;
-  } catch {
-    return NextResponse.json({ error: "تعذر إنشاء الحساب." }, { status: 500 });
+  } catch (error: unknown) {
+    console.error("🔥 ERROR in POST /api/auth/register:", error);
+    const message = error instanceof Error ? error.message : "تعذر إنشاء الحساب.";
+    return NextResponse.json({ success: false, error: message }, { status: 500 });
   }
 }

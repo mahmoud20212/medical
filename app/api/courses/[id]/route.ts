@@ -36,8 +36,10 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     });
 
     return NextResponse.json(course);
-  } catch {
-    return NextResponse.json({ error: "Failed to update course." }, { status: 500 });
+  } catch (error: unknown) {
+    console.error("🔥 ERROR in PATCH /api/courses/[id]:", error);
+    const message = error instanceof Error ? error.message : "Failed to update course.";
+    return NextResponse.json({ success: false, error: message }, { status: 500 });
   }
 }
 
@@ -60,7 +62,9 @@ export async function DELETE(_: Request, context: { params: Promise<{ id: string
     });
 
     return NextResponse.json({ success: true });
-  } catch {
-    return NextResponse.json({ error: "Failed to delete course." }, { status: 500 });
+  } catch (error: unknown) {
+    console.error("🔥 ERROR in DELETE /api/courses/[id]:", error);
+    const message = error instanceof Error ? error.message : "Failed to delete course.";
+    return NextResponse.json({ success: false, error: message }, { status: 500 });
   }
 }

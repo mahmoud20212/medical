@@ -47,17 +47,15 @@ export async function GET(request: Request) {
         totalPages: Math.max(Math.ceil(total / pageSize), 1),
       },
     });
-  } catch {
+  } catch (error: unknown) {
+    console.error("🔥 ERROR in GET /api/team:", error);
+    const message = error instanceof Error ? error.message : "Failed to load team members.";
     return NextResponse.json(
       {
+        success: false,
         items: [],
-        pagination: {
-          page: 1,
-          pageSize: DEFAULT_PAGE_SIZE,
-          total: 0,
-          totalPages: 1,
-        },
-        error: "Failed to load team members.",
+        pagination: { page: 1, pageSize: DEFAULT_PAGE_SIZE, total: 0, totalPages: 1 },
+        error: message,
       },
       { status: 500 }
     );
@@ -83,7 +81,9 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json(member, { status: 201 });
-  } catch {
-    return NextResponse.json({ error: "Failed to create team member." }, { status: 500 });
+  } catch (error: unknown) {
+    console.error("🔥 ERROR in POST /api/team:", error);
+    const message = error instanceof Error ? error.message : "Failed to create team member.";
+    return NextResponse.json({ success: false, error: message }, { status: 500 });
   }
 }
